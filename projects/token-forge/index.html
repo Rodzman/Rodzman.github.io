@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>token-forge: every colour against every other colour — Rodz</title>
+  <meta name="description" content="Why I built a design-tokens studio that grades all 90 colour combinations of a palette against WCAG at once, and fixes the failing ones without changing the hue." />
+  <meta name="theme-color" content="#111111" />
+  <link rel="canonical" href="https://rodzman.github.io/projects/token-forge/" />
+  <link rel="icon" href="https://github.com/Rodzman.png" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://rodzman.github.io/projects/token-forge/" />
+  <meta property="og:title" content="token-forge: every colour against every other colour" />
+  <meta property="og:description" content="A design-tokens studio that grades every colour pair against WCAG and fixes failures without changing the hue." />
+  <meta property="og:image" content="https://rodzman.github.io/projects/token-forge/studio-dark.webp" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
+  <script>
+    try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="../../assets/article.css" />
+</head>
+<body>
+  <a class="skip" href="#article" data-i18n="skip">Skip to article</a>
+
+  <nav aria-label="Main">
+    <div class="wrap nav">
+      <a class="brand" href="../../">rodz<b>.</b></a>
+      <div class="nav-right">
+        <a class="back" href="../../#work" data-i18n="nav.back">← All projects</a>
+        <button class="ctrl lang" id="lang-toggle" type="button" aria-label="Mudar para português">
+          <span data-lang="en">EN</span>/<span data-lang="pt">PT</span>
+        </button>
+        <button class="ctrl" id="theme-toggle" type="button" aria-label="Toggle light/dark theme">◐</button>
+      </div>
+    </div>
+    <div class="progress" aria-hidden="true"></div>
+  </nav>
+
+  <header class="wrap a-head">
+    <p class="kicker mono" data-i18n="kicker"><b>●</b> Case study · Design × code</p>
+    <h1 data-i18n="title">Every colour against every other colour<span class="dot">.</span></h1>
+    <p class="dek" data-i18n="dek">token-forge is a design-tokens studio that checks a whole palette for readability at once, and fixes what fails without throwing away the designer's choices.</p>
+    <div class="byline mono">
+      <img src="https://github.com/Rodzman.png" alt="" width="36" height="36"
+           onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'av',textContent:'R'}))" />
+      <strong>Rodz</strong><span class="sep">·</span><span data-i18n="readtime">4 min read</span><span class="sep">·</span><span>Next.js · React · TypeScript</span>
+    </div>
+
+    <!-- Cover poster: the real contrast matrix of the app's sample palette (rows = text, columns = background). Hatched = fails WCAG 2.1. -->
+    <div class="cover">
+      <svg viewBox="0 0 1040 560" role="img" data-i18n-attr="aria-label:cover.aria"
+           aria-label="The contrast matrix of token-forge's sample palette: 10 colours make 90 text-on-background pairs, and 44 of them fail WCAG 2.1">
+        <defs>
+          <pattern id="tf-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="7" style="stroke:var(--warn)" stroke-width="3.2"/>
+          </pattern>
+          <pattern id="tf-dots" width="10" height="10" patternUnits="userSpaceOnUse">
+            <circle cx="5" cy="5" r="2" style="fill:var(--accent)"/>
+          </pattern>
+        </defs>
+        <g style="color:var(--text)">
+          <circle cx="760" cy="300" r="250" fill="url(#tf-dots)" opacity=".45"/>
+
+          <g font-family="Space Grotesk, sans-serif" font-weight="700" letter-spacing="-3">
+            <text x="48" y="150" font-size="96" fill="currentColor">90</text>
+            <text x="48" y="186" font-size="22" letter-spacing="0" class="mono" fill="currentColor" opacity=".7" data-i18n="cover.pairs">COLOUR PAIRS</text>
+            <text x="48" y="300" font-size="96" fill="none" stroke="currentColor" stroke-width="2">44</text>
+            <text x="48" y="336" font-size="22" letter-spacing="0" style="fill:var(--warn)" data-i18n="cover.fail">FAIL WCAG</text>
+            <text x="48" y="450" font-size="96" style="fill:var(--accent)">1</text>
+            <text x="48" y="486" font-size="22" letter-spacing="0" fill="currentColor" opacity=".7" data-i18n="cover.click">CLICK TO FIX EACH</text>
+          </g>
+
+          <!-- misregistered print layer -->
+          <rect x="566" y="116" width="396" height="396" style="fill:var(--accent)" opacity=".9"/>
+          <g transform="translate(556 106)" font-family="Space Grotesk, sans-serif">
+            <rect x="-8" y="-8" width="412" height="412" style="fill:var(--bg)" stroke="currentColor" stroke-width="2.5"/>
+            <rect x="0.75" y="0.75" width="34.5" height="34.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="3 3"/>
+            <rect x="40" y="0" width="36" height="36" fill="#ffffff"/><text x="58" y="24" text-anchor="middle" font-size="17" font-weight="700" fill="#2f6fed">Aa</text>
+            <rect x="80" y="0" width="36" height="36" fill="#8a4fd8"/><text x="98" y="24" text-anchor="middle" font-size="17" font-weight="700" fill="#2f6fed">Aa</text>
+            <rect x="80" y="0" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="120" y="0" width="36" height="36" fill="#ffffff"/><text x="138" y="24" text-anchor="middle" font-size="17" font-weight="700" fill="#2f6fed">Aa</text>
+            <rect x="160" y="0" width="36" height="36" fill="#eef1f6"/><text x="178" y="24" text-anchor="middle" font-size="17" font-weight="700" fill="#2f6fed">Aa</text>
+            <rect x="200" y="0" width="36" height="36" fill="#1c2130"/><text x="218" y="24" text-anchor="middle" font-size="17" font-weight="700" fill="#2f6fed">Aa</text>
+            <rect x="240" y="0" width="36" height="36" fill="#5b6474"/><text x="258" y="24" text-anchor="middle" font-size="17" font-weight="700" fill="#2f6fed">Aa</text>
+            <rect x="240" y="0" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="280" y="0" width="36" height="36" fill="#1f9d55"/><text x="298" y="24" text-anchor="middle" font-size="17" font-weight="700" fill="#2f6fed">Aa</text>
+            <rect x="280" y="0" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="320" y="0" width="36" height="36" fill="#e9a23b"/><text x="338" y="24" text-anchor="middle" font-size="17" font-weight="700" fill="#2f6fed">Aa</text>
+            <rect x="320" y="0" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="360" y="0" width="36" height="36" fill="#d64545"/><text x="378" y="24" text-anchor="middle" font-size="17" font-weight="700" fill="#2f6fed">Aa</text>
+            <rect x="360" y="0" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="0" y="40" width="36" height="36" fill="#2f6fed"/><text x="18" y="64" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="40.75" y="40.75" width="34.5" height="34.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="3 3"/>
+            <rect x="80" y="40" width="36" height="36" fill="#8a4fd8"/><text x="98" y="64" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="120" y="40" width="36" height="36" fill="#ffffff"/><text x="138" y="64" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="120" y="40" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="160" y="40" width="36" height="36" fill="#eef1f6"/><text x="178" y="64" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="160" y="40" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="200" y="40" width="36" height="36" fill="#1c2130"/><text x="218" y="64" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="240" y="40" width="36" height="36" fill="#5b6474"/><text x="258" y="64" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="280" y="40" width="36" height="36" fill="#1f9d55"/><text x="298" y="64" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="320" y="40" width="36" height="36" fill="#e9a23b"/><text x="338" y="64" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="320" y="40" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="360" y="40" width="36" height="36" fill="#d64545"/><text x="378" y="64" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="0" y="80" width="36" height="36" fill="#2f6fed"/><text x="18" y="104" text-anchor="middle" font-size="17" font-weight="700" fill="#8a4fd8">Aa</text>
+            <rect x="0" y="80" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="40" y="80" width="36" height="36" fill="#ffffff"/><text x="58" y="104" text-anchor="middle" font-size="17" font-weight="700" fill="#8a4fd8">Aa</text>
+            <rect x="80.75" y="80.75" width="34.5" height="34.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="3 3"/>
+            <rect x="120" y="80" width="36" height="36" fill="#ffffff"/><text x="138" y="104" text-anchor="middle" font-size="17" font-weight="700" fill="#8a4fd8">Aa</text>
+            <rect x="160" y="80" width="36" height="36" fill="#eef1f6"/><text x="178" y="104" text-anchor="middle" font-size="17" font-weight="700" fill="#8a4fd8">Aa</text>
+            <rect x="200" y="80" width="36" height="36" fill="#1c2130"/><text x="218" y="104" text-anchor="middle" font-size="17" font-weight="700" fill="#8a4fd8">Aa</text>
+            <rect x="240" y="80" width="36" height="36" fill="#5b6474"/><text x="258" y="104" text-anchor="middle" font-size="17" font-weight="700" fill="#8a4fd8">Aa</text>
+            <rect x="240" y="80" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="280" y="80" width="36" height="36" fill="#1f9d55"/><text x="298" y="104" text-anchor="middle" font-size="17" font-weight="700" fill="#8a4fd8">Aa</text>
+            <rect x="280" y="80" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="320" y="80" width="36" height="36" fill="#e9a23b"/><text x="338" y="104" text-anchor="middle" font-size="17" font-weight="700" fill="#8a4fd8">Aa</text>
+            <rect x="320" y="80" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="360" y="80" width="36" height="36" fill="#d64545"/><text x="378" y="104" text-anchor="middle" font-size="17" font-weight="700" fill="#8a4fd8">Aa</text>
+            <rect x="360" y="80" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="0" y="120" width="36" height="36" fill="#2f6fed"/><text x="18" y="144" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="40" y="120" width="36" height="36" fill="#ffffff"/><text x="58" y="144" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="40" y="120" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="80" y="120" width="36" height="36" fill="#8a4fd8"/><text x="98" y="144" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="120.75" y="120.75" width="34.5" height="34.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="3 3"/>
+            <rect x="160" y="120" width="36" height="36" fill="#eef1f6"/><text x="178" y="144" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="160" y="120" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="200" y="120" width="36" height="36" fill="#1c2130"/><text x="218" y="144" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="240" y="120" width="36" height="36" fill="#5b6474"/><text x="258" y="144" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="280" y="120" width="36" height="36" fill="#1f9d55"/><text x="298" y="144" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="320" y="120" width="36" height="36" fill="#e9a23b"/><text x="338" y="144" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="320" y="120" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="360" y="120" width="36" height="36" fill="#d64545"/><text x="378" y="144" text-anchor="middle" font-size="17" font-weight="700" fill="#ffffff">Aa</text>
+            <rect x="0" y="160" width="36" height="36" fill="#2f6fed"/><text x="18" y="184" text-anchor="middle" font-size="17" font-weight="700" fill="#eef1f6">Aa</text>
+            <rect x="40" y="160" width="36" height="36" fill="#ffffff"/><text x="58" y="184" text-anchor="middle" font-size="17" font-weight="700" fill="#eef1f6">Aa</text>
+            <rect x="40" y="160" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="80" y="160" width="36" height="36" fill="#8a4fd8"/><text x="98" y="184" text-anchor="middle" font-size="17" font-weight="700" fill="#eef1f6">Aa</text>
+            <rect x="120" y="160" width="36" height="36" fill="#ffffff"/><text x="138" y="184" text-anchor="middle" font-size="17" font-weight="700" fill="#eef1f6">Aa</text>
+            <rect x="120" y="160" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="160.75" y="160.75" width="34.5" height="34.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="3 3"/>
+            <rect x="200" y="160" width="36" height="36" fill="#1c2130"/><text x="218" y="184" text-anchor="middle" font-size="17" font-weight="700" fill="#eef1f6">Aa</text>
+            <rect x="240" y="160" width="36" height="36" fill="#5b6474"/><text x="258" y="184" text-anchor="middle" font-size="17" font-weight="700" fill="#eef1f6">Aa</text>
+            <rect x="280" y="160" width="36" height="36" fill="#1f9d55"/><text x="298" y="184" text-anchor="middle" font-size="17" font-weight="700" fill="#eef1f6">Aa</text>
+            <rect x="320" y="160" width="36" height="36" fill="#e9a23b"/><text x="338" y="184" text-anchor="middle" font-size="17" font-weight="700" fill="#eef1f6">Aa</text>
+            <rect x="320" y="160" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="360" y="160" width="36" height="36" fill="#d64545"/><text x="378" y="184" text-anchor="middle" font-size="17" font-weight="700" fill="#eef1f6">Aa</text>
+            <rect x="0" y="200" width="36" height="36" fill="#2f6fed"/><text x="18" y="224" text-anchor="middle" font-size="17" font-weight="700" fill="#1c2130">Aa</text>
+            <rect x="40" y="200" width="36" height="36" fill="#ffffff"/><text x="58" y="224" text-anchor="middle" font-size="17" font-weight="700" fill="#1c2130">Aa</text>
+            <rect x="80" y="200" width="36" height="36" fill="#8a4fd8"/><text x="98" y="224" text-anchor="middle" font-size="17" font-weight="700" fill="#1c2130">Aa</text>
+            <rect x="120" y="200" width="36" height="36" fill="#ffffff"/><text x="138" y="224" text-anchor="middle" font-size="17" font-weight="700" fill="#1c2130">Aa</text>
+            <rect x="160" y="200" width="36" height="36" fill="#eef1f6"/><text x="178" y="224" text-anchor="middle" font-size="17" font-weight="700" fill="#1c2130">Aa</text>
+            <rect x="200.75" y="200.75" width="34.5" height="34.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="3 3"/>
+            <rect x="240" y="200" width="36" height="36" fill="#5b6474"/><text x="258" y="224" text-anchor="middle" font-size="17" font-weight="700" fill="#1c2130">Aa</text>
+            <rect x="240" y="200" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="280" y="200" width="36" height="36" fill="#1f9d55"/><text x="298" y="224" text-anchor="middle" font-size="17" font-weight="700" fill="#1c2130">Aa</text>
+            <rect x="320" y="200" width="36" height="36" fill="#e9a23b"/><text x="338" y="224" text-anchor="middle" font-size="17" font-weight="700" fill="#1c2130">Aa</text>
+            <rect x="360" y="200" width="36" height="36" fill="#d64545"/><text x="378" y="224" text-anchor="middle" font-size="17" font-weight="700" fill="#1c2130">Aa</text>
+            <rect x="0" y="240" width="36" height="36" fill="#2f6fed"/><text x="18" y="264" text-anchor="middle" font-size="17" font-weight="700" fill="#5b6474">Aa</text>
+            <rect x="0" y="240" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="40" y="240" width="36" height="36" fill="#ffffff"/><text x="58" y="264" text-anchor="middle" font-size="17" font-weight="700" fill="#5b6474">Aa</text>
+            <rect x="80" y="240" width="36" height="36" fill="#8a4fd8"/><text x="98" y="264" text-anchor="middle" font-size="17" font-weight="700" fill="#5b6474">Aa</text>
+            <rect x="80" y="240" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="120" y="240" width="36" height="36" fill="#ffffff"/><text x="138" y="264" text-anchor="middle" font-size="17" font-weight="700" fill="#5b6474">Aa</text>
+            <rect x="160" y="240" width="36" height="36" fill="#eef1f6"/><text x="178" y="264" text-anchor="middle" font-size="17" font-weight="700" fill="#5b6474">Aa</text>
+            <rect x="200" y="240" width="36" height="36" fill="#1c2130"/><text x="218" y="264" text-anchor="middle" font-size="17" font-weight="700" fill="#5b6474">Aa</text>
+            <rect x="200" y="240" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="240.75" y="240.75" width="34.5" height="34.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="3 3"/>
+            <rect x="280" y="240" width="36" height="36" fill="#1f9d55"/><text x="298" y="264" text-anchor="middle" font-size="17" font-weight="700" fill="#5b6474">Aa</text>
+            <rect x="280" y="240" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="320" y="240" width="36" height="36" fill="#e9a23b"/><text x="338" y="264" text-anchor="middle" font-size="17" font-weight="700" fill="#5b6474">Aa</text>
+            <rect x="320" y="240" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="360" y="240" width="36" height="36" fill="#d64545"/><text x="378" y="264" text-anchor="middle" font-size="17" font-weight="700" fill="#5b6474">Aa</text>
+            <rect x="360" y="240" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="0" y="280" width="36" height="36" fill="#2f6fed"/><text x="18" y="304" text-anchor="middle" font-size="17" font-weight="700" fill="#1f9d55">Aa</text>
+            <rect x="0" y="280" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="40" y="280" width="36" height="36" fill="#ffffff"/><text x="58" y="304" text-anchor="middle" font-size="17" font-weight="700" fill="#1f9d55">Aa</text>
+            <rect x="80" y="280" width="36" height="36" fill="#8a4fd8"/><text x="98" y="304" text-anchor="middle" font-size="17" font-weight="700" fill="#1f9d55">Aa</text>
+            <rect x="80" y="280" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="120" y="280" width="36" height="36" fill="#ffffff"/><text x="138" y="304" text-anchor="middle" font-size="17" font-weight="700" fill="#1f9d55">Aa</text>
+            <rect x="160" y="280" width="36" height="36" fill="#eef1f6"/><text x="178" y="304" text-anchor="middle" font-size="17" font-weight="700" fill="#1f9d55">Aa</text>
+            <rect x="200" y="280" width="36" height="36" fill="#1c2130"/><text x="218" y="304" text-anchor="middle" font-size="17" font-weight="700" fill="#1f9d55">Aa</text>
+            <rect x="240" y="280" width="36" height="36" fill="#5b6474"/><text x="258" y="304" text-anchor="middle" font-size="17" font-weight="700" fill="#1f9d55">Aa</text>
+            <rect x="240" y="280" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="280.75" y="280.75" width="34.5" height="34.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="3 3"/>
+            <rect x="320" y="280" width="36" height="36" fill="#e9a23b"/><text x="338" y="304" text-anchor="middle" font-size="17" font-weight="700" fill="#1f9d55">Aa</text>
+            <rect x="320" y="280" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="360" y="280" width="36" height="36" fill="#d64545"/><text x="378" y="304" text-anchor="middle" font-size="17" font-weight="700" fill="#1f9d55">Aa</text>
+            <rect x="360" y="280" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="0" y="320" width="36" height="36" fill="#2f6fed"/><text x="18" y="344" text-anchor="middle" font-size="17" font-weight="700" fill="#e9a23b">Aa</text>
+            <rect x="0" y="320" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="40" y="320" width="36" height="36" fill="#ffffff"/><text x="58" y="344" text-anchor="middle" font-size="17" font-weight="700" fill="#e9a23b">Aa</text>
+            <rect x="40" y="320" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="80" y="320" width="36" height="36" fill="#8a4fd8"/><text x="98" y="344" text-anchor="middle" font-size="17" font-weight="700" fill="#e9a23b">Aa</text>
+            <rect x="80" y="320" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="120" y="320" width="36" height="36" fill="#ffffff"/><text x="138" y="344" text-anchor="middle" font-size="17" font-weight="700" fill="#e9a23b">Aa</text>
+            <rect x="120" y="320" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="160" y="320" width="36" height="36" fill="#eef1f6"/><text x="178" y="344" text-anchor="middle" font-size="17" font-weight="700" fill="#e9a23b">Aa</text>
+            <rect x="160" y="320" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="200" y="320" width="36" height="36" fill="#1c2130"/><text x="218" y="344" text-anchor="middle" font-size="17" font-weight="700" fill="#e9a23b">Aa</text>
+            <rect x="240" y="320" width="36" height="36" fill="#5b6474"/><text x="258" y="344" text-anchor="middle" font-size="17" font-weight="700" fill="#e9a23b">Aa</text>
+            <rect x="240" y="320" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="280" y="320" width="36" height="36" fill="#1f9d55"/><text x="298" y="344" text-anchor="middle" font-size="17" font-weight="700" fill="#e9a23b">Aa</text>
+            <rect x="280" y="320" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="320.75" y="320.75" width="34.5" height="34.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="3 3"/>
+            <rect x="360" y="320" width="36" height="36" fill="#d64545"/><text x="378" y="344" text-anchor="middle" font-size="17" font-weight="700" fill="#e9a23b">Aa</text>
+            <rect x="360" y="320" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="0" y="360" width="36" height="36" fill="#2f6fed"/><text x="18" y="384" text-anchor="middle" font-size="17" font-weight="700" fill="#d64545">Aa</text>
+            <rect x="0" y="360" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="40" y="360" width="36" height="36" fill="#ffffff"/><text x="58" y="384" text-anchor="middle" font-size="17" font-weight="700" fill="#d64545">Aa</text>
+            <rect x="80" y="360" width="36" height="36" fill="#8a4fd8"/><text x="98" y="384" text-anchor="middle" font-size="17" font-weight="700" fill="#d64545">Aa</text>
+            <rect x="80" y="360" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="120" y="360" width="36" height="36" fill="#ffffff"/><text x="138" y="384" text-anchor="middle" font-size="17" font-weight="700" fill="#d64545">Aa</text>
+            <rect x="160" y="360" width="36" height="36" fill="#eef1f6"/><text x="178" y="384" text-anchor="middle" font-size="17" font-weight="700" fill="#d64545">Aa</text>
+            <rect x="200" y="360" width="36" height="36" fill="#1c2130"/><text x="218" y="384" text-anchor="middle" font-size="17" font-weight="700" fill="#d64545">Aa</text>
+            <rect x="240" y="360" width="36" height="36" fill="#5b6474"/><text x="258" y="384" text-anchor="middle" font-size="17" font-weight="700" fill="#d64545">Aa</text>
+            <rect x="240" y="360" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="280" y="360" width="36" height="36" fill="#1f9d55"/><text x="298" y="384" text-anchor="middle" font-size="17" font-weight="700" fill="#d64545">Aa</text>
+            <rect x="280" y="360" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="320" y="360" width="36" height="36" fill="#e9a23b"/><text x="338" y="384" text-anchor="middle" font-size="17" font-weight="700" fill="#d64545">Aa</text>
+            <rect x="320" y="360" width="36" height="36" fill="url(#tf-hatch)"/>
+            <rect x="360.75" y="360.75" width="34.5" height="34.5" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="3 3"/>
+          </g>
+          <g class="mono" font-size="12" fill="currentColor" opacity=".6">
+            <text x="556" y="86" data-i18n="cover.axis">TEXT ↓ ON BACKGROUND →</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </header>
+
+  <main class="article" id="article">
+    <p class="lead" data-i18n="p1">Most colour tools check one pair at a time: pick a text colour, pick a background, read the ratio. But a real interface eventually puts every colour on every other colour: a warning badge on a muted card, a link inside a success banner, the brand blue on a grey surface. Those are exactly the combinations nobody thinks to test.</p>
+    <p data-i18n="p2">I worked in design for about ten years before moving into engineering. token-forge sits right where those two meet: it takes the checking that is easy to skip by hand and makes it impossible to miss.</p>
+
+    <h2><span class="n">01</span><span data-i18n="h.problem">The problem in numbers</span></h2>
+    <p data-i18n="p3">The sample palette that ships with the app has ten colours: a primary blue, an accent purple, two surfaces, two text greys, and success, warning and danger. Ten colours as text on ten colours as background gives 90 combinations once you leave out each colour on itself.</p>
+    <div class="facts">
+      <div><b>10</b><span data-i18n="f1">colours in the palette</span></div>
+      <div><b>90</b><span data-i18n="f2">text / background pairs</span></div>
+      <div><b style="color:var(--warn)">44</b><span data-i18n="f3">fail WCAG 2.1 outright</span></div>
+    </div>
+    <p data-i18n="p4">Almost half. And that is a palette that looks perfectly reasonable on a moodboard. Checking those pairs one by one is tedious enough that, in practice, people don't.</p>
+
+    <h2><span class="n">02</span><span data-i18n="h.idea">The idea: see everything at once</span></h2>
+    <p data-i18n="p5">The heart of token-forge is a contrast matrix. Every colour token appears as text in a row and as background in a column, and each cell shows the exact ratio and its WCAG grade: AAA, AA, AA Large or Fail. Change a hex value and the whole matrix updates live.</p>
+    <figure class="wide">
+      <img class="theme-dark-only" src="matrix-dark.webp" width="1720" height="2180" loading="lazy" data-i18n-attr="alt:img.matrix" alt="token-forge's contrast matrix: a 10 by 10 grid where each cell shows a contrast ratio, its WCAG grade and, when it fails, a suggested fix" />
+      <img class="theme-light-only" src="matrix-light.webp" width="1720" height="2180" loading="lazy" data-i18n-attr="alt:img.matrix" alt="token-forge's contrast matrix: a 10 by 10 grid where each cell shows a contrast ratio, its WCAG grade and, when it fails, a suggested fix" />
+      <figcaption data-i18n="cap.matrix">The real app, sample palette. Rows are text, columns are backgrounds; every failing cell carries its own fix.</figcaption>
+    </figure>
+    <p class="pull" data-i18n="pull">The matrix catches the combinations nobody thought to test.</p>
+
+    <h2><span class="n">03</span><span data-i18n="h.fix">A fix a designer would accept</span></h2>
+    <p data-i18n="p6">Finding failures is only half the job. The easy fix is "just use black", and no designer will accept that, because it throws away the colour they chose. So token-forge keeps the hue and saturation of the text colour and changes only its lightness, by the smallest amount that reaches the target.</p>
+    <div class="swatches">
+      <div class="sw"><b style="color:#e9a23b">Warning</b><span>#e9a23b · 2.16:1 · Fail</span></div>
+      <div class="sw-arrow" data-i18n="sw.arrow">same hue →<br>darker by 22%</div>
+      <div class="sw"><b style="color:#a26712">Warning</b><span>#a26712 · 4.68:1 · AA</span></div>
+    </div>
+    <p data-i18n="p7">Here is the sample palette's warning orange as text on white. It fails at 2.16:1. One click on its cell suggests a deeper orange from the same family that passes AA at 4.68:1. You can aim for AA (4.5:1) or the stricter AAA (7:1).</p>
+
+    <figure class="wide">
+      <div class="frame">
+        <svg viewBox="0 0 1040 470" role="img" data-i18n-attr="aria-label:diag.aria"
+             aria-label="How the fix works: the warning orange is moved along its own lightness scale, one percent at a time in both directions, until it reaches 4.5 to 1 against white">
+          <defs>
+            <linearGradient id="tf-light" x1="0" x2="1">
+              <stop offset="0" stop-color="hsl(35.5 80% 5%)"/>
+              <stop offset=".25" stop-color="hsl(35.5 80% 27%)"/>
+              <stop offset=".5" stop-color="hsl(35.5 80% 50%)"/>
+              <stop offset=".75" stop-color="hsl(35.5 80% 72%)"/>
+              <stop offset="1" stop-color="hsl(35.5 80% 95%)"/>
+            </linearGradient>
+            <pattern id="tf-grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="currentColor" stroke-opacity=".07"/></pattern>
+            <marker id="tf-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+          </defs>
+          <g style="color:var(--text)">
+            <rect width="1040" height="470" fill="url(#tf-grid)"/>
+            <g class="mono" font-size="11" fill="currentColor" opacity=".55">
+              <text x="40" y="40" data-i18n="d.fig">FIG. 02 — THE LIGHTNESS SEARCH</text>
+              <text x="1000" y="40" text-anchor="end" data-i18n="d.fixed">HUE 35° · SATURATION 80% · FIXED</text>
+            </g>
+
+            <!-- lightness axis: x = 80 + l * 880 -->
+            <rect x="80" y="170" width="880" height="64" fill="url(#tf-light)" stroke="currentColor" stroke-width="1.5"/>
+            <!-- passing zone (l <= ~0.36 reaches 4.5:1 on white) -->
+            <rect x="80" y="148" width="317" height="14" style="fill:var(--accent)"/>
+            <text x="88" y="140" class="mono" font-size="11" style="fill:var(--accent-text)" data-i18n="d.zone">PASSES AA ON WHITE (≥ 4.5:1)</text>
+            <g class="mono" font-size="11" fill="currentColor" opacity=".6">
+              <text x="80" y="256">0%</text><text x="520" y="256" text-anchor="middle">50%</text><text x="960" y="256" text-anchor="end">100%</text>
+              <text x="520" y="276" text-anchor="middle" data-i18n="d.axis">LIGHTNESS</text>
+            </g>
+
+            <!-- original: l = 0.572 → x = 583 ; fix: l = 0.353 → x = 391 -->
+            <line x1="583" y1="160" x2="583" y2="320" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 4"/>
+            <circle cx="583" cy="202" r="11" fill="#e9a23b" stroke="currentColor" stroke-width="2.5"/>
+            <line x1="391" y1="160" x2="391" y2="320" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="391" cy="202" r="11" fill="#a26712" style="stroke:var(--accent)" stroke-width="3"/>
+
+            <!-- search arrows: both directions -->
+            <path d="M570 330 H404" stroke="currentColor" stroke-width="1.5" marker-end="url(#tf-arr)"/>
+            <path d="M596 330 H700" stroke="currentColor" stroke-width="1.5" stroke-opacity=".4" marker-end="url(#tf-arr)"/>
+            <text x="487" y="352" text-anchor="middle" class="mono" font-size="11" fill="currentColor" data-i18n="d.darker">−1% per step · found at 22</text>
+            <text x="648" y="352" text-anchor="middle" class="mono" font-size="11" fill="currentColor" opacity=".55" data-i18n="d.lighter">+1% · never passes</text>
+
+            <g class="mono" font-size="12">
+              <text x="583" y="390" text-anchor="middle" fill="currentColor" font-weight="600">#e9a23b</text>
+              <text x="583" y="408" text-anchor="middle" style="fill:var(--warn)">2.16:1 · Fail</text>
+              <text x="391" y="390" text-anchor="middle" fill="currentColor" font-weight="600">#a26712</text>
+              <text x="391" y="408" text-anchor="middle" style="fill:var(--accent-text)">4.68:1 · AA</text>
+            </g>
+            <text x="40" y="446" class="mono" font-size="11" fill="currentColor" opacity=".55" data-i18n="d.note">If no lightness of the hue can reach the target, token-forge says so instead of inventing another colour.</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption data-i18n="cap.diag">The fix only travels along the colour's own lightness axis, checking lighter and darker one step at a time, and stops at the first shade that passes.</figcaption>
+    </figure>
+    <p data-i18n="p8">If no lightness of that hue can ever reach the target, for example two mid-greys that are simply too close, the tool says so instead of quietly inventing a different colour. I would rather be honest than clever there.</p>
+
+    <h2><span class="n">04</span><span data-i18n="h.more">More than colour</span></h2>
+    <p data-i18n="p9">Colours are the headline, but a design system is more than a palette. token-forge also manages spacing and corner radii, and builds a modular type scale from a base size and a musical ratio (minor third, perfect fourth, golden ratio and others), from <code>xs</code> up to <code>9xl</code>. A live preview shows the tokens on real UI while you edit.</p>
+    <figure class="wide">
+      <img class="theme-dark-only" src="studio-dark.webp" width="2540" height="1240" loading="lazy" data-i18n-attr="alt:img.studio" alt="The token-forge studio: colour tokens on the left, a live preview card on the right" />
+      <img class="theme-light-only" src="studio-light.webp" width="2540" height="1240" loading="lazy" data-i18n-attr="alt:img.studio" alt="The token-forge studio: colour tokens on the left, a live preview card on the right" />
+      <figcaption data-i18n="cap.studio">The studio follows your system's light or dark mode. Edits are saved in the browser.</figcaption>
+    </figure>
+    <p data-i18n="p10">When the set is ready, it exports to whatever the project uses: CSS custom properties, a Tailwind v4 <code>@theme</code> block, SCSS variables and maps, the W3C Design Tokens (DTCG) draft format, or plain JSON. The same tokens you checked are the ones that ship.</p>
+
+    <h2><span class="n">05</span><span data-i18n="h.decisions">Decisions I made, and why</span></h2>
+    <ul>
+      <li data-i18n="li1"><strong>Lightness-only fixes.</strong> A suggestion that changes the hue is a different colour, not a fix. Keeping hue and saturation means the brand survives the accessibility pass.</li>
+      <li data-i18n="li2"><strong>Pure, tested colour maths.</strong> All the calculations are plain functions with unit tests against WCAG reference values. For example, <code>#767676</code> on white must come out at 4.54:1, the well-known grey that just passes AA.</li>
+      <li data-i18n="li3"><strong>Tests that use the app like a person.</strong> Component tests type a failing colour, watch the cell turn to Fail, click fix, and watch it pass.</li>
+      <li data-i18n="li4"><strong>Imports that explain themselves.</strong> Importing a token file is validated, and errors point to the exact field that is wrong, in plain words.</li>
+      <li data-i18n="li5"><strong>Accessible by default.</strong> Keyboard-friendly tabs, labelled inputs and a dark mode. A contrast tool that isn't accessible would be a strange thing to ship.</li>
+    </ul>
+
+    <h2><span class="n">06</span><span data-i18n="h.limits">Known limits</span></h2>
+    <p data-i18n="p11">Contrast is measured with WCAG 2.1. The newer APCA method, proposed for WCAG 3, is not implemented. The DTCG export follows the community draft, which has changed shape over time, so it is worth checking against the tool you feed it into. And the fix only moves lightness, by design.</p>
+
+    <div class="cta-box">
+      <h3 data-i18n="cta.h">Try it or read the code</h3>
+      <p data-i18n="cta.p">Open source under the MIT licence. It runs locally with Node:</p>
+      <pre>git clone https://github.com/Rodzman/token-forge
+cd token-forge && npm install && npm run dev</pre>
+      <div class="btns">
+        <a class="btn primary" href="https://github.com/Rodzman/token-forge" data-i18n="cta.gh">View on GitHub ↗</a>
+        <a class="btn ghost" href="../../#work" data-i18n="cta.back">More projects</a>
+      </div>
+    </div>
+
+    <div class="tags"><span class="tag">Next.js 16</span><span class="tag">React 19</span><span class="tag">TypeScript</span><span class="tag">Tailwind CSS v4</span><span class="tag">Zod</span><span class="tag">Vitest</span><span class="tag">Testing Library</span><span class="tag">WCAG 2.1</span></div>
+  </main>
+
+  <footer>
+    <div class="wrap mono">
+      <span>© <span id="year">2026</span> Rodz · <a href="../../">rodzman.github.io</a></span>
+      <span data-i18n="footer">Hand-written HTML &amp; CSS. No framework, no tracking.</span>
+    </div>
+  </footer>
+
+  <script>
+    window.ARTICLE_META_PT = {
+      title: 'token-forge: todas as cores contra todas as outras — Rodz',
+      desc: 'Por que construí um estúdio de design tokens que avalia de uma vez as 90 combinações de cores de uma paleta segundo a WCAG, e corrige as que falham sem mudar o matiz.'
+    };
+    window.ARTICLE_PT = {
+      'skip': 'Pular para o artigo',
+      'nav.back': '← Todos os projetos',
+      'kicker': '<b>●</b> Estudo de caso · Design × código',
+      'title': 'Todas as cores contra todas as outras<span class="dot">.</span>',
+      'dek': 'O token-forge é um estúdio de design tokens que verifica a legibilidade de uma paleta inteira de uma vez, e corrige o que falha sem jogar fora as escolhas do designer.',
+      'readtime': '4 min de leitura',
+      'cover.aria': 'A matriz de contraste da paleta de exemplo do token-forge: 10 cores formam 90 pares de texto sobre fundo, e 44 deles reprovam na WCAG 2.1',
+      'cover.pairs': 'PARES DE CORES',
+      'cover.fail': 'REPROVAM NA WCAG',
+      'cover.click': 'CLIQUE PARA CORRIGIR CADA UM',
+      'cover.axis': 'TEXTO ↓ SOBRE FUNDO →',
+      'p1': 'A maioria das ferramentas de cor verifica um par por vez: escolha uma cor de texto, escolha um fundo, leia a razão de contraste. Mas uma interface real acaba colocando todas as cores sobre todas as outras: um selo de aviso num card neutro, um link dentro de um banner de sucesso, o azul da marca sobre uma superfície cinza. São exatamente as combinações que ninguém pensa em testar.',
+      'p2': 'Trabalhei cerca de dez anos com design antes de ir para a engenharia. O token-forge fica bem onde esses dois mundos se encontram: pega a verificação que é fácil de pular na mão e torna impossível não vê-la.',
+      'h.problem': 'O problema em números',
+      'p3': 'A paleta de exemplo que vem com o app tem dez cores: um azul primário, um roxo de destaque, duas superfícies, dois cinzas de texto, e sucesso, aviso e perigo. Dez cores como texto sobre dez cores como fundo dão 90 combinações, sem contar cada cor sobre ela mesma.',
+      'f1': 'cores na paleta',
+      'f2': 'pares texto / fundo',
+      'f3': 'reprovam direto na WCAG 2.1',
+      'p4': 'Quase metade. E é uma paleta que parece perfeitamente razoável num moodboard. Conferir esses pares um a um é tão chato que, na prática, ninguém confere.',
+      'h.idea': 'A ideia: ver tudo de uma vez',
+      'p5': 'O coração do token-forge é uma matriz de contraste. Cada token de cor aparece como texto numa linha e como fundo numa coluna, e cada célula mostra a razão exata e o nível WCAG: AAA, AA, AA Large ou Fail. Mude um valor hexadecimal e a matriz inteira se atualiza na hora.',
+      'img.matrix': 'A matriz de contraste do token-forge: uma grade de 10 por 10 em que cada célula mostra a razão de contraste, o nível WCAG e, quando reprova, uma correção sugerida',
+      'cap.matrix': 'O app real, com a paleta de exemplo. Linhas são texto, colunas são fundos; cada célula reprovada traz sua própria correção.',
+      'pull': 'A matriz pega as combinações que ninguém pensou em testar.',
+      'h.fix': 'Uma correção que um designer aceitaria',
+      'p6': 'Encontrar as falhas é só metade do trabalho. A correção fácil é "usa preto", e nenhum designer aceita isso, porque joga fora a cor que ele escolheu. Por isso o token-forge mantém o matiz e a saturação da cor do texto e muda apenas a luminosidade, na menor quantidade que alcança a meta.',
+      'sw.arrow': 'mesmo matiz →<br>22% mais escuro',
+      'p7': 'Aqui está o laranja de aviso da paleta de exemplo como texto sobre branco. Ele reprova com 2,16:1. Um clique na célula sugere um laranja mais profundo da mesma família, que passa no AA com 4,68:1. Dá para mirar no AA (4,5:1) ou no AAA, mais rigoroso (7:1).',
+      'diag.aria': 'Como a correção funciona: o laranja de aviso é movido ao longo da sua própria escala de luminosidade, um por cento por vez nas duas direções, até alcançar 4,5 para 1 contra o branco',
+      'd.fig': 'FIG. 02 — A BUSCA POR LUMINOSIDADE',
+      'd.fixed': 'MATIZ 35° · SATURAÇÃO 80% · FIXOS',
+      'd.zone': 'PASSA NO AA SOBRE BRANCO (≥ 4,5:1)',
+      'd.axis': 'LUMINOSIDADE',
+      'd.darker': '−1% por passo · encontrado em 22',
+      'd.lighter': '+1% · nunca passa',
+      'd.note': 'Se nenhuma luminosidade do matiz alcança a meta, o token-forge avisa em vez de inventar outra cor.',
+      'cap.diag': 'A correção só anda pelo eixo de luminosidade da própria cor, testando mais claro e mais escuro um passo por vez, e para no primeiro tom que passa.',
+      'p8': 'Se nenhuma luminosidade daquele matiz consegue alcançar a meta, por exemplo dois cinzas médios que estão simplesmente próximos demais, a ferramenta avisa em vez de inventar outra cor em silêncio. Ali, prefiro ser honesto a ser esperto.',
+      'h.more': 'Mais do que cor',
+      'p9': 'As cores são a manchete, mas um design system é mais do que uma paleta. O token-forge também gerencia espaçamentos e raios de borda, e monta uma escala tipográfica modular a partir de um tamanho base e de uma razão musical (terça menor, quarta justa, proporção áurea e outras), de <code>xs</code> até <code>9xl</code>. Uma prévia ao vivo mostra os tokens numa interface real enquanto você edita.',
+      'img.studio': 'O estúdio do token-forge: tokens de cor à esquerda, um card de prévia ao vivo à direita',
+      'cap.studio': 'O estúdio segue o modo claro ou escuro do seu sistema. As edições ficam salvas no navegador.',
+      'p10': 'Quando o conjunto está pronto, ele exporta para o que o projeto usar: variáveis CSS, um bloco <code>@theme</code> do Tailwind v4, variáveis e mapas SCSS, o formato rascunho do W3C Design Tokens (DTCG) ou JSON puro. Os mesmos tokens que você verificou são os que vão para produção.',
+      'h.decisions': 'Decisões que tomei, e por quê',
+      'li1': '<strong>Correções só na luminosidade.</strong> Uma sugestão que muda o matiz é outra cor, não uma correção. Manter matiz e saturação faz a marca sobreviver à revisão de acessibilidade.',
+      'li2': '<strong>Matemática de cor pura e testada.</strong> Todos os cálculos são funções simples com testes unitários contra valores de referência da WCAG. Por exemplo, <code>#767676</code> sobre branco tem que dar 4,54:1, o famoso cinza que passa no AA por pouco.',
+      'li3': '<strong>Testes que usam o app como uma pessoa.</strong> Os testes de componentes digitam uma cor que reprova, veem a célula virar Fail, clicam em corrigir e veem passar.',
+      'li4': '<strong>Importações que se explicam.</strong> Importar um arquivo de tokens passa por validação, e os erros apontam o campo exato que está errado, em palavras simples.',
+      'li5': '<strong>Acessível por padrão.</strong> Abas navegáveis pelo teclado, campos com rótulos e modo escuro. Uma ferramenta de contraste que não fosse acessível seria uma coisa estranha de lançar.',
+      'h.limits': 'Limites conhecidos',
+      'p11': 'O contraste é medido com a WCAG 2.1. O método APCA, mais novo e proposto para a WCAG 3, não está implementado. A exportação DTCG segue o rascunho da comunidade, que mudou de formato ao longo do tempo, então vale conferir com a ferramenta que vai recebê-la. E a correção só mexe na luminosidade, de propósito.',
+      'cta.h': 'Experimente ou leia o código',
+      'cta.p': 'Código aberto sob a licença MIT. Roda localmente com Node:',
+      'cta.gh': 'Ver no GitHub ↗',
+      'cta.back': 'Mais projetos',
+      'footer': 'HTML e CSS escritos à mão. Sem framework, sem rastreamento.'
+    };
+  </script>
+  <script src="../../assets/article.js"></script>
+</body>
+</html>
