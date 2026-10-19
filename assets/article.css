@@ -166,3 +166,19 @@ footer a { color: var(--accent-text); text-decoration: none; }
   html { scroll-behavior: auto; }
   .btn:hover { transform: none; }
 }
+
+/* Terminal output block (real command output) */
+.term { border: 1px solid var(--line); background: #0c0c0c; color: #e9e6df; }
+.term .bar { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid #262626; }
+.term .bar i { width: 10px; height: 10px; border-radius: 50%; background: #333; display: block; }
+.term .bar span { margin-left: 8px; font: .72rem 'JetBrains Mono', monospace; color: #8a877f; }
+.term pre { margin: 0; padding: 16px 18px; overflow-x: auto; font: .82rem/1.65 'JetBrains Mono', monospace; }
+.term .ok { color: #c9e84a; } .term .bad { color: #ff7a5c; } .term .dim { color: #8a877f; } .term .hl { color: #fff; font-weight: 600; }
+
+/* Option cards (e.g. three algorithms) */
+.cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); margin: 1.8em -60px; }
+.cards3 > div { background: var(--bg); padding: 20px; }
+.cards3 h4 { font-size: 1.1rem; letter-spacing: -.02em; margin-bottom: 6px; }
+.cards3 .k { font: .7rem 'JetBrains Mono', monospace; color: var(--accent-text); text-transform: uppercase; }
+.cards3 p { font-family: 'Space Grotesk', sans-serif !important; font-size: .95rem !important; line-height: 1.5 !important; color: var(--muted); margin-top: 8px !important; }
+@media (max-width: 860px) { .cards3 { grid-template-columns: 1fr; margin-inline: 0; } }

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rails-url-shortener: short links, honest stats — Rodz</title>
+  <meta name="description" content="A Rails 8.1 API that shortens links and reports how they're used, counting unique visitors without storing anyone's IP address." />
+  <meta name="theme-color" content="#111111" />
+  <link rel="canonical" href="https://rodzman.github.io/projects/rails-url-shortener/" />
+  <link rel="icon" href="https://github.com/Rodzman.png" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://rodzman.github.io/projects/rails-url-shortener/" />
+  <meta property="og:title" content="rails-url-shortener: short links, honest stats" />
+  <meta property="og:description" content="Short links with click stats that count unique visitors without storing IP addresses." />
+  <meta property="og:image" content="https://github.com/Rodzman.png" />
+  <meta name="twitter:card" content="summary" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
+  <script>
+    try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="../../assets/article.css" />
+</head>
+<body>
+  <a class="skip" href="#article" data-i18n="skip">Skip to article</a>
+
+  <nav aria-label="Main">
+    <div class="wrap nav">
+      <a class="brand" href="../../">rodz<b>.</b></a>
+      <div class="nav-right">
+        <a class="back" href="../../#work" data-i18n="nav.back">← All projects</a>
+        <button class="ctrl lang" id="lang-toggle" type="button" aria-label="Mudar para português">
+          <span data-lang="en">EN</span>/<span data-lang="pt">PT</span>
+        </button>
+        <button class="ctrl" id="theme-toggle" type="button" aria-label="Toggle light/dark theme">◐</button>
+      </div>
+    </div>
+    <div class="progress" aria-hidden="true"></div>
+  </nav>
+
+  <header class="wrap a-head">
+    <p class="kicker mono" data-i18n="kicker"><b>●</b> Case study · Backend · Rails</p>
+    <h1 data-i18n="title">Short links, honest stats<span class="dot">.</span></h1>
+    <p class="dek" data-i18n="dek">rails-url-shortener turns long addresses into short ones and reports how they're used, including unique visitors, without storing anyone's IP address.</p>
+    <div class="byline mono">
+      <img src="https://github.com/Rodzman.png" alt="" width="36" height="36"
+           onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'av',textContent:'R'}))" />
+      <strong>Rodz</strong><span class="sep">·</span><span data-i18n="readtime">3 min read</span><span class="sep">·</span><span>Ruby · Rails 8.1</span>
+    </div>
+
+    <!-- Cover poster: the README's example link, shortened, plus the redirect status the design hinges on. -->
+    <div class="cover">
+      <svg viewBox="0 0 1040 520" role="img" data-i18n-attr="aria-label:cover.aria"
+           aria-label="A long link goes in and a short one comes out; every visit is answered with a 302 redirect and counted">
+        <defs>
+          <pattern id="ru-dots" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="2" style="fill:var(--accent)"/></pattern>
+          <marker id="ru-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+        </defs>
+        <g style="color:var(--text)">
+          <circle cx="860" cy="380" r="200" fill="url(#ru-dots)" opacity=".45"/>
+          <g font-family="Space Grotesk, sans-serif" font-weight="700" letter-spacing="-3">
+            <text x="48" y="120" font-size="70" fill="none" stroke="currentColor" stroke-width="2" data-i18n="cover.l1">LONG LINK IN.</text>
+            <text x="48" y="206" font-size="70" style="fill:var(--accent-text)" data-i18n="cover.l2">SHORT LINK OUT.</text>
+            <text x="48" y="292" font-size="70" fill="currentColor" data-i18n="cover.l3">EVERY CLICK</text>
+            <text x="48" y="372" font-size="70" fill="currentColor" data-i18n="cover.l4">COUNTED.</text>
+          </g>
+          <!-- long → short -->
+          <g class="mono" font-size="15">
+            <rect x="48" y="420" width="470" height="52" rx="26" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="6 5"/>
+            <text x="74" y="452" fill="currentColor" opacity=".75">https://rubyonrails.org/doctrine</text>
+            <line x1="530" y1="446" x2="600" y2="446" stroke="currentColor" stroke-width="3" marker-end="url(#ru-arr)"/>
+            <rect x="614" y="420" width="170" height="52" rx="26" style="fill:var(--accent)"/>
+            <text x="699" y="452" text-anchor="middle" font-weight="600" fill="#111">/doctrine</text>
+          </g>
+          <!-- 302 stamp, misregistered -->
+          <g transform="translate(830 170)" font-family="Space Grotesk, sans-serif" font-weight="700">
+            <circle cx="8" cy="8" r="98" style="fill:var(--warn)"/>
+            <circle cx="0" cy="0" r="98" style="fill:var(--bg)" stroke="currentColor" stroke-width="3"/>
+            <circle cx="0" cy="0" r="84" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 4"/>
+            <text x="0" y="18" text-anchor="middle" font-size="62" letter-spacing="-3" fill="currentColor">302</text>
+            <text x="0" y="48" text-anchor="middle" font-size="13" letter-spacing="2" class="mono" fill="currentColor" opacity=".7" data-i18n="cover.found">NOT 301</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </header>
+
+  <main class="article" id="article">
+    <p class="lead" data-i18n="p1">Short links are everywhere: on posters, in social posts, behind QR codes. The shortening is the easy part. The useful part is knowing whether anyone used them, and that is usually where tools start tracking people far more than they need to.</p>
+    <p data-i18n="p2">rails-url-shortener is a small, production-shaped service built with Rails 8.1. It creates short links, redirects visitors, and answers the questions that matter (how many clicks, from where, how many different people today) while deliberately keeping as little personal data as possible.</p>
+
+    <div class="facts">
+      <div><b>3.5 tn</b><span data-i18n="f1">possible 7-character links</span></div>
+      <div><b>30</b><span data-i18n="f2">new links per minute per IP</span></div>
+      <div><b>0</b><span data-i18n="f3">IP addresses stored</span></div>
+    </div>
+
+    <h2><span class="n">01</span><span data-i18n="h.what">What it does</span></h2>
+    <ul>
+      <li data-i18n="li.a"><strong>Create a link,</strong> optionally with your own name for it (<code>/doctrine</code>) and an expiry date.</li>
+      <li data-i18n="li.b"><strong>Redirect visitors</strong> to the original address, and answer “gone” once a link has expired.</li>
+      <li data-i18n="li.c"><strong>Report usage:</strong> total clicks, unique visitors today, clicks per day for the last week, and the top five places visitors came from.</li>
+    </ul>
+    <figure class="full">
+      <div class="term">
+        <div class="bar"><i></i><i></i><i></i><span>curl</span></div>
+<pre><span class="dim"># create</span>
+curl -s -X POST localhost:3000/api/v1/links -H 'Content-Type: application/json' \
+  -d '{"url":"https://rubyonrails.org/doctrine","slug":"doctrine"}'
+<span class="dim">→</span> {"slug":"doctrine","short_url":"http://localhost:3000/doctrine",...}
+
+<span class="dim"># follow (302) — every visit is recorded</span>
+curl -i localhost:3000/doctrine
+
+<span class="dim"># stats</span>
+curl -s localhost:3000/api/v1/links/doctrine/stats
+<span class="dim">→</span> <span class="ok">{"total_clicks":1,"unique_visitors_today":1,"last_7_days":[...],"top_referrers":[...]}</span></pre>
+      </div>
+      <figcaption data-i18n="cap.term">The whole lifecycle in three requests, from the project's README.</figcaption>
+    </figure>
+
+    <h2><span class="n">02</span><span data-i18n="h.click">What happens on a click</span></h2>
+    <figure class="wide">
+      <div class="frame">
+        <svg viewBox="0 0 1040 470" role="img" data-i18n-attr="aria-label:diag.aria"
+             aria-label="A visit to a short link is checked: unknown links get 404 and expired ones 410. Otherwise the click is recorded with a hashed visitor id instead of the IP, and the visitor gets a 302 redirect to the original address. The stats endpoint reads the recorded clicks.">
+          <defs>
+            <pattern id="rg" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="currentColor" stroke-opacity=".07"/></pattern>
+            <marker id="ra" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+            <marker id="ra2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--accent-text)"/></marker>
+          </defs>
+          <g style="color:var(--text)" class="mono">
+            <rect width="1040" height="470" fill="url(#rg)"/>
+            <text x="40" y="44" font-size="11" fill="currentColor" opacity=".55" data-i18n="d.fig">FIG. 01 — GET /doctrine</text>
+            <!-- visitor -->
+            <circle cx="90" cy="190" r="34" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="90" cy="180" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M72 206 q18 -16 36 0" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <text x="90" y="142" text-anchor="middle" font-size="11" fill="currentColor" data-i18n="d.visitor">visitor</text>
+            <line x1="126" y1="190" x2="250" y2="190" stroke="currentColor" stroke-width="1.5" marker-end="url(#ra)"/>
+            <text x="188" y="180" text-anchor="middle" font-size="11" fill="currentColor" opacity=".7">GET /doctrine</text>
+            <!-- checks -->
+            <rect x="255" y="140" width="190" height="100" fill="none" stroke="currentColor" stroke-width="2"/>
+            <text x="350" y="172" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor" data-i18n="d.lookup">look up slug</text>
+            <text x="350" y="194" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">unknown → 404</text>
+            <text x="350" y="212" text-anchor="middle" font-size="10" fill="currentColor" opacity=".6">expired → 410 Gone</text>
+            <line x1="445" y1="190" x2="545" y2="190" stroke="currentColor" stroke-width="1.5" marker-end="url(#ra)"/>
+            <text x="495" y="180" text-anchor="middle" font-size="10" fill="currentColor" opacity=".7" data-i18n="d.valid">valid</text>
+            <!-- record click -->
+            <rect x="550" y="110" width="250" height="160" style="fill:var(--accent)"/>
+            <text x="566" y="138" font-size="12" font-weight="600" fill="#111" data-i18n="d.record">record the click</text>
+            <text x="566" y="164" font-size="11" fill="#111">referrer</text>
+            <text x="566" y="182" font-size="11" fill="#111">user agent</text>
+            <text x="566" y="208" font-size="11" font-weight="600" fill="#111">visitor_hash =</text>
+            <text x="566" y="226" font-size="11" fill="#111">SHA-256(secret | date</text>
+            <text x="566" y="244" font-size="11" fill="#111">         | IP | agent)</text>
+            <text x="784" y="262" text-anchor="end" font-size="10" fill="#111" data-i18n="d.noip">IP discarded</text>
+            <!-- db -->
+            <g transform="translate(860 120)">
+              <ellipse cx="60" cy="12" rx="60" ry="12" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M0 12 V128 a60 12 0 0 0 120 0 V12" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="60" y="76" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">clicks</text>
+            </g>
+            <line x1="800" y1="190" x2="855" y2="190" stroke="currentColor" stroke-width="1.5" marker-end="url(#ra)"/>
+            <!-- redirect back to visitor -->
+            <path d="M675 270 V350 H90 V232" fill="none" style="stroke:var(--accent-text)" stroke-width="2" marker-end="url(#ra2)"/>
+            <rect x="300" y="334" width="300" height="32" style="fill:var(--bg)"/>
+            <text x="450" y="355" text-anchor="middle" font-size="12" font-weight="600" style="fill:var(--accent-text)" data-i18n="d.redirect">302 → https://rubyonrails.org/doctrine</text>
+            <!-- stats -->
+            <path d="M920 272 V420 H760" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ra)"/>
+            <text x="560" y="416" font-size="11" fill="currentColor" font-weight="600">GET …/doctrine/stats</text>
+            <text x="560" y="434" font-size="10" fill="currentColor" opacity=".6" data-i18n="d.stats">totals · unique today · 7 days · top 5 referrers</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption data-i18n="cap.diag">The redirect path does one insert and one counter update. The visitor's IP is used to compute the hash and is never saved.</figcaption>
+    </figure>
+    <p data-i18n="p3">The interesting part is the visitor id. To count unique visitors, you need to recognise the same person twice; the lazy way is to store their IP address. Instead, each click stores a SHA-256 hash of a server secret, today's date, the IP and the browser's user agent. Two visits from the same IP and browser on the same day produce the same hash, so they count once. Tomorrow the date changes, and so does the hash.</p>
+    <p class="pull" data-i18n="pull">Enough to count visitors. Not enough to follow them from day to day.</p>
+
+    <h2><span class="n">03</span><span data-i18n="h.decisions">Decisions I made, and why</span></h2>
+    <ul>
+      <li data-i18n="li1"><strong>302, not 301.</strong> A permanent redirect lets browsers skip the server on repeat visits, which would make click counts meaningless. A temporary one keeps every visit visible.</li>
+      <li data-i18n="li2"><strong>Only web addresses.</strong> Links must be <code>http</code> or <code>https</code> with a host. <code>javascript:</code> and <code>data:</code> addresses are rejected, so a short link can never become a way to run code in someone's browser.</li>
+      <li data-i18n="li3"><strong>Short, unguessable, unique slugs.</strong> Seven random letters and digits give about 3.5 trillion combinations, with a retry on the rare collision. Custom names are validated, checked against reserved words like <code>api</code>, and kept unique regardless of letter case.</li>
+      <li data-i18n="li4"><strong>Built-in abuse protection.</strong> Creating links is limited to 30 per minute per IP, using Rails' own rate limiting.</li>
+      <li data-i18n="li5"><strong>Errors you can program against.</strong> Every error, including “not found”, comes back as JSON, with field-level messages when validation fails.</li>
+    </ul>
+
+    <h2><span class="n">04</span><span data-i18n="h.prod">Production-shaped</span></h2>
+    <p data-i18n="p4">It is small, but built the way a real service would be. It ships with a production Dockerfile, and every push runs the linter (RuboCop), a static security scan (Brakeman) and the test suite: 18 tests and 95 assertions covering the models and the HTTP endpoints. It uses SQLite by default, and switching databases is a one-line configuration change because nothing in the code depends on SQLite.</p>
+
+    <h2><span class="n">05</span><span data-i18n="h.limits">Known limits</span></h2>
+    <p data-i18n="p5">The rate-limit counter lives in each server process's memory, so with several processes it should be pointed at a shared store. There is no web interface; it is an API, meant to sit behind an app, a bot or a script.</p>
+
+    <div class="cta-box">
+      <h3 data-i18n="cta.h">Try it or read the code</h3>
+      <p data-i18n="cta.p">Open source under the MIT licence. Needs Ruby 3.3:</p>
+      <pre>git clone https://github.com/Rodzman/rails-url-shortener
+cd rails-url-shortener && bin/setup --skip-server && bin/rails server</pre>
+      <div class="btns">
+        <a class="btn primary" href="https://github.com/Rodzman/rails-url-shortener" data-i18n="cta.gh">View on GitHub ↗</a>
+        <a class="btn ghost" href="../../#work" data-i18n="cta.back">More projects</a>
+      </div>
+    </div>
+
+    <div class="tags"><span class="tag">Ruby 3.3</span><span class="tag">Rails 8.1</span><span class="tag">API-only</span><span class="tag">SQLite</span><span class="tag">Minitest</span><span class="tag">RuboCop</span><span class="tag">Brakeman</span><span class="tag">Docker</span></div>
+  </main>
+
+  <footer>
+    <div class="wrap mono">
+      <span>© <span id="year">2026</span> Rodz · <a href="../../">rodzman.github.io</a></span>
+      <span data-i18n="footer">Hand-written HTML &amp; CSS. No framework, no tracking.</span>
+    </div>
+  </footer>
+
+  <script>
+    window.ARTICLE_META_PT = {
+      title: 'rails-url-shortener: links curtos, estatísticas honestas — Rodz',
+      desc: 'Uma API em Rails 8.1 que encurta links e mostra como são usados, contando visitantes únicos sem guardar o endereço IP de ninguém.'
+    };
+    window.ARTICLE_PT = {
+      'skip': 'Pular para o artigo',
+      'nav.back': '← Todos os projetos',
+      'kicker': '<b>●</b> Estudo de caso · Backend · Rails',
+      'title': 'Links curtos, estatísticas honestas<span class="dot">.</span>',
+      'dek': 'O rails-url-shortener transforma endereços longos em curtos e mostra como eles são usados, incluindo visitantes únicos, sem guardar o endereço IP de ninguém.',
+      'readtime': '3 min de leitura',
+      'cover.aria': 'Um link longo entra e um curto sai; cada visita é respondida com um redirecionamento 302 e contada',
+      'cover.l1': 'LINK LONGO ENTRA.', 'cover.l2': 'LINK CURTO SAI.', 'cover.l3': 'CADA CLIQUE', 'cover.l4': 'CONTADO.', 'cover.found': 'NÃO 301',
+      'p1': 'Links curtos estão em todo lugar: em cartazes, em posts nas redes, atrás de QR codes. Encurtar é a parte fácil. A parte útil é saber se alguém usou, e é aí que as ferramentas costumam começar a rastrear as pessoas muito além do necessário.',
+      'p2': 'O rails-url-shortener é um serviço pequeno, com formato de produção, feito com Rails 8.1. Ele cria links curtos, redireciona os visitantes e responde as perguntas que importam (quantos cliques, de onde, quantas pessoas diferentes hoje) mantendo de propósito o mínimo possível de dados pessoais.',
+      'f1': 'links possíveis de 7 caracteres', 'f2': 'links novos por minuto por IP', 'f3': 'endereços IP guardados',
+      'h.what': 'O que ele faz',
+      'li.a': '<strong>Cria um link,</strong> opcionalmente com um nome escolhido por você (<code>/doctrine</code>) e uma data de expiração.',
+      'li.b': '<strong>Redireciona os visitantes</strong> para o endereço original, e responde “não existe mais” quando o link expirou.',
+      'li.c': '<strong>Mostra o uso:</strong> total de cliques, visitantes únicos hoje, cliques por dia na última semana e os cinco lugares de onde mais vieram visitantes.',
+      'cap.term': 'O ciclo inteiro em três requisições, do README do projeto.',
+      'h.click': 'O que acontece num clique',
+      'diag.aria': 'Uma visita a um link curto é conferida: links desconhecidos recebem 404 e expirados 410. Caso contrário, o clique é registrado com um identificador de visitante em hash no lugar do IP, e o visitante recebe um redirecionamento 302 para o endereço original. O endpoint de estatísticas lê os cliques registrados.',
+      'd.fig': 'FIG. 01 — GET /doctrine', 'd.visitor': 'visitante', 'd.lookup': 'procura o slug', 'd.valid': 'válido',
+      'd.record': 'registra o clique', 'd.noip': 'IP descartado', 'd.redirect': '302 → https://rubyonrails.org/doctrine',
+      'd.stats': 'totais · únicos hoje · 7 dias · top 5 origens',
+      'cap.diag': 'O caminho do redirecionamento faz uma inserção e uma atualização de contador. O IP do visitante é usado para calcular o hash e nunca é salvo.',
+      'p3': 'A parte interessante é o identificador do visitante. Para contar visitantes únicos, é preciso reconhecer a mesma pessoa duas vezes; o jeito preguiçoso é guardar o endereço IP. Em vez disso, cada clique guarda um hash SHA-256 de um segredo do servidor, da data de hoje, do IP e do user agent do navegador. Duas visitas do mesmo IP e navegador no mesmo dia geram o mesmo hash, então contam uma vez só. Amanhã a data muda, e o hash também.',
+      'pull': 'O bastante para contar visitantes. Não o bastante para segui-los de um dia para o outro.',
+      'h.decisions': 'Decisões que tomei, e por quê',
+      'li1': '<strong>302, não 301.</strong> Um redirecionamento permanente deixa o navegador pular o servidor nas visitas seguintes, o que tornaria a contagem de cliques inútil. Um temporário mantém cada visita visível.',
+      'li2': '<strong>Só endereços web.</strong> Os links precisam ser <code>http</code> ou <code>https</code> com um host. Endereços <code>javascript:</code> e <code>data:</code> são recusados, então um link curto nunca vira um jeito de rodar código no navegador de alguém.',
+      'li3': '<strong>Slugs curtos, imprevisíveis e únicos.</strong> Sete letras e números aleatórios dão cerca de 3,5 trilhões de combinações, com nova tentativa na rara colisão. Nomes personalizados são validados, conferidos contra palavras reservadas como <code>api</code>, e mantidos únicos sem diferenciar maiúsculas de minúsculas.',
+      'li4': '<strong>Proteção contra abuso embutida.</strong> A criação de links é limitada a 30 por minuto por IP, usando o rate limiting do próprio Rails.',
+      'li5': '<strong>Erros com que dá para programar.</strong> Todo erro, inclusive “não encontrado”, volta como JSON, com mensagens por campo quando a validação falha.',
+      'h.prod': 'Com formato de produção',
+      'p4': 'É pequeno, mas construído como um serviço real seria. Vem com um Dockerfile de produção, e cada push roda o linter (RuboCop), uma análise estática de segurança (Brakeman) e a suíte de testes: 18 testes e 95 asserções cobrindo os modelos e os endpoints HTTP. Usa SQLite por padrão, e trocar de banco é uma mudança de uma linha de configuração, porque nada no código depende do SQLite.',
+      'h.limits': 'Limites conhecidos',
+      'p5': 'O contador do rate limit vive na memória de cada processo do servidor, então com vários processos ele deve apontar para um armazenamento compartilhado. Não há interface web; é uma API, feita para ficar por trás de um app, um bot ou um script.',
+      'cta.h': 'Experimente ou leia o código',
+      'cta.p': 'Código aberto sob a licença MIT. Precisa de Ruby 3.3:',
+      'cta.gh': 'Ver no GitHub ↗', 'cta.back': 'Mais projetos',
+      'footer': 'HTML e CSS escritos à mão. Sem framework, sem rastreamento.'
+    };
+  </script>
+  <script src="../../assets/article.js"></script>
+</body>
+</html>

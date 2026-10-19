@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pulse: know when it breaks, without another dashboard — Rodz</title>
+  <meta name="description" content="A single-file, zero-dependency health checker that tells cron jobs and CI pipelines when a website or API stops behaving." />
+  <meta name="theme-color" content="#111111" />
+  <link rel="canonical" href="https://rodzman.github.io/projects/pulse/" />
+  <link rel="icon" href="https://github.com/Rodzman.png" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://rodzman.github.io/projects/pulse/" />
+  <meta property="og:title" content="pulse: know when it breaks, without another dashboard" />
+  <meta property="og:description" content="A single-file, zero-dependency health checker for cron jobs and CI pipelines." />
+  <meta property="og:image" content="https://github.com/Rodzman.png" />
+  <meta name="twitter:card" content="summary" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
+  <script>
+    try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="../../assets/article.css" />
+</head>
+<body>
+  <a class="skip" href="#article" data-i18n="skip">Skip to article</a>
+
+  <nav aria-label="Main">
+    <div class="wrap nav">
+      <a class="brand" href="../../">rodz<b>.</b></a>
+      <div class="nav-right">
+        <a class="back" href="../../#work" data-i18n="nav.back">← All projects</a>
+        <button class="ctrl lang" id="lang-toggle" type="button" aria-label="Mudar para português">
+          <span data-lang="en">EN</span>/<span data-lang="pt">PT</span>
+        </button>
+        <button class="ctrl" id="theme-toggle" type="button" aria-label="Toggle light/dark theme">◐</button>
+      </div>
+    </div>
+    <div class="progress" aria-hidden="true"></div>
+  </nav>
+
+  <header class="wrap a-head">
+    <p class="kicker mono" data-i18n="kicker"><b>●</b> Case study · Ops tooling</p>
+    <h1 data-i18n="title">Know when it breaks, without another dashboard<span class="dot">.</span></h1>
+    <p class="dek" data-i18n="dek">pulse is a single-file health checker that tells your cron job or CI pipeline when a website or API stops behaving, with nothing to install.</p>
+    <div class="byline mono">
+      <img src="https://github.com/Rodzman.png" alt="" width="36" height="36"
+           onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'av',textContent:'R'}))" />
+      <strong>Rodz</strong><span class="sep">·</span><span data-i18n="readtime">3 min read</span><span class="sep">·</span><span>Python · stdlib only</span>
+    </div>
+
+    <!-- Cover poster: one round of checks from the README's example output. -->
+    <div class="cover">
+      <svg viewBox="0 0 1040 520" role="img" data-i18n-attr="aria-label:cover.aria"
+           aria-label="pulse checks three endpoints; one fails its expected status, so the run reports 2 of 3 healthy, exits 1 and sends an alert">
+        <defs>
+          <pattern id="pu-dots" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="4.5" cy="4.5" r="1.8" style="fill:var(--accent)"/></pattern>
+          <pattern id="pu-ink" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="3.5" cy="3.5" r="1.2" fill="currentColor"/></pattern>
+          <pattern id="pu-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" style="stroke:var(--warn)" stroke-width="3"/></pattern>
+        </defs>
+        <g style="color:var(--text)">
+          <circle cx="820" cy="120" r="210" fill="url(#pu-dots)" opacity=".55"/>
+          <g font-family="Space Grotesk, sans-serif" font-weight="700" letter-spacing="-3">
+            <text x="40" y="78" font-size="64" fill="currentColor" data-i18n="cover.l1">CHECK</text>
+            <text x="40" y="140" font-size="64" fill="none" stroke="currentColor" stroke-width="1.5" data-i18n="cover.l2">EVERY</text>
+            <text x="40" y="202" font-size="64" style="fill:var(--accent-text)" data-i18n="cover.l3">ENDPOINT.</text>
+          </g>
+          <g transform="translate(70 280)" font-family="Space Grotesk, sans-serif">
+            <g>
+              <circle cx="74" cy="74" r="70" style="fill:var(--accent)"/>
+              <circle cx="66" cy="66" r="70" fill="none" stroke="currentColor" stroke-width="3"/>
+              <text x="70" y="62" text-anchor="middle" font-size="15" font-weight="700" fill="#111">website</text>
+              <text x="70" y="88" text-anchor="middle" font-size="26" font-weight="700" fill="#111">142ms</text>
+            </g>
+            <g transform="translate(190 0)">
+              <circle cx="74" cy="74" r="70" fill="url(#pu-ink)" opacity=".35"/>
+              <circle cx="66" cy="66" r="70" fill="none" stroke="currentColor" stroke-width="3"/>
+              <text x="70" y="62" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">api-health</text>
+              <text x="70" y="88" text-anchor="middle" font-size="26" font-weight="700" fill="currentColor">318ms</text>
+            </g>
+            <g transform="translate(380 0)">
+              <circle cx="74" cy="74" r="70" fill="url(#pu-hatch)"/>
+              <circle cx="66" cy="66" r="70" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="10 8"/>
+              <rect x="10" y="48" width="122" height="52" style="fill:var(--bg)"/>
+              <text x="70" y="68" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">legacy-redirect</text>
+              <text x="70" y="92" text-anchor="middle" font-size="20" font-weight="700" style="fill:var(--warn)">200 ≠ 301</text>
+            </g>
+          </g>
+          <path d="M610 354 H700" stroke="currentColor" stroke-width="4"/>
+          <path d="M700 340 L722 354 L700 368Z" fill="currentColor"/>
+          <g transform="translate(740 268)">
+            <rect x="8" y="8" width="250" height="180" style="fill:var(--warn)"/>
+            <rect x="0" y="0" width="250" height="180" style="fill:var(--bg)" stroke="currentColor" stroke-width="3"/>
+            <text x="22" y="40" class="mono" font-size="13" fill="currentColor" opacity=".7" data-i18n="cover.result">RESULT</text>
+            <text x="22" y="100" font-size="56" font-weight="700" fill="currentColor" letter-spacing="-2" font-family="Space Grotesk, sans-serif">2/3</text>
+            <text x="22" y="132" class="mono" font-size="14" fill="currentColor" data-i18n="cover.exit">exit 1 → alert sent</text>
+            <text x="22" y="158" class="mono" font-size="12" fill="currentColor" opacity=".6">cron · CI · webhook</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </header>
+
+  <main class="article" id="article">
+    <p class="lead" data-i18n="p1">Every service has a handful of addresses that simply must keep working: the homepage, an API health route, a redirect that old links depend on. There are monitoring services for this, but they usually mean another account, another dashboard, and handing your list of endpoints to someone else.</p>
+    <p data-i18n="p2">pulse takes the opposite approach. It is one Python file that uses only the standard library. You list your endpoints in a small config file, run it, and it tells you, through a single exit code, whether everything is healthy.</p>
+
+    <div class="facts">
+      <div><b>1</b><span data-i18n="f1">file to copy</span></div>
+      <div><b>0</b><span data-i18n="f2">dependencies to install</span></div>
+      <div><b>0 / 1</b><span data-i18n="f3">exit code: healthy / failed</span></div>
+    </div>
+
+    <h2><span class="n">01</span><span data-i18n="h.what">What a check looks for</span></h2>
+    <p data-i18n="p3">A check passes only when every rule you set for it holds. For each endpoint you can require:</p>
+    <ul>
+      <li data-i18n="li.a"><strong>A status code.</strong> 200 by default, or, say, 301 for a redirect that must stay permanent.</li>
+      <li data-i18n="li.b"><strong>A keyword in the response.</strong> A page can return 200 and still be broken; checking for a word on it catches that.</li>
+      <li data-i18n="li.c"><strong>A response-time limit.</strong> Slow is a kind of broken too.</li>
+      <li data-i18n="li.d"><strong>A timeout and retries.</strong> So a brief network blip doesn't count as an outage.</li>
+    </ul>
+    <figure class="full">
+      <div class="term">
+        <div class="bar"><i></i><i></i><i></i><span>python3 pulse.py</span></div>
+<pre>pulse · 2026-08-23 14:00:00
+<span class="ok">OK  </span> website         200    142ms
+<span class="ok">OK  </span> api-health      200    318ms
+<span class="bad">FAIL</span> legacy-redirect 200    105ms
+      <span class="dim">└─ got status 200, expected 301</span>
+
+<span class="hl">2/3 healthy</span></pre>
+      </div>
+      <figcaption data-i18n="cap.term">Example output from the project's README: the redirect answered, but with the wrong status.</figcaption>
+    </figure>
+
+    <h2><span class="n">02</span><span data-i18n="h.how">How one round works</span></h2>
+    <figure class="wide">
+      <div class="frame">
+        <svg viewBox="0 0 1040 520" role="img" data-i18n-attr="aria-label:diag.aria"
+             aria-label="pulse reads its config file, probes each endpoint, and turns the results into an exit code for cron or CI, plus a webhook alert when something fails">
+          <defs>
+            <pattern id="pa-grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="currentColor" stroke-opacity=".07"/></pattern>
+            <marker id="pa-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker>
+            <marker id="pa-arr-acc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--accent-text)"/></marker>
+          </defs>
+          <g style="color:var(--text)">
+            <rect width="1040" height="520" fill="url(#pa-grid)"/>
+            <g class="mono" font-size="11" fill="currentColor" opacity=".55">
+              <text x="40" y="44" data-i18n="d.fig">FIG. 01 — ONE ROUND OF CHECKS</text>
+              <text x="1000" y="44" text-anchor="end">PULSE.PY · STDLIB ONLY</text>
+            </g>
+            <g transform="translate(60 150)">
+              <path d="M0 0H130L160 30V220H0Z" style="fill:var(--bg)" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M130 0V30H160" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="14" y="26" class="mono" font-size="13" font-weight="600" fill="currentColor">pulse.toml</text>
+              <g class="mono" font-size="11" fill="currentColor" opacity=".7">
+                <text x="14" y="62">[[endpoints]]</text><text x="14" y="78">  website</text>
+                <text x="14" y="108">[[endpoints]]</text><text x="14" y="124">  api-health</text>
+                <text x="14" y="154">[[endpoints]]</text><text x="14" y="170">  legacy-redirect</text>
+                <text x="14" y="200">  expect 301</text>
+              </g>
+            </g>
+            <line x1="230" y1="260" x2="350" y2="260" stroke="currentColor" stroke-width="1.5" marker-end="url(#pa-arr)"/>
+            <text x="290" y="250" text-anchor="middle" class="mono" font-size="11" fill="currentColor" opacity=".7" data-i18n="d.reads">reads</text>
+            <g transform="translate(355 200)">
+              <rect width="150" height="120" fill="none" stroke="currentColor" stroke-width="2"/>
+              <rect x="6" y="6" width="138" height="108" fill="none" stroke="currentColor" stroke-opacity=".3"/>
+              <text x="75" y="56" text-anchor="middle" font-size="22" font-weight="700" fill="currentColor" font-family="Space Grotesk, sans-serif">pulse</text>
+              <text x="75" y="78" text-anchor="middle" class="mono" font-size="10" fill="currentColor" opacity=".6">status · keyword</text>
+              <text x="75" y="92" text-anchor="middle" class="mono" font-size="10" fill="currentColor" opacity=".6">latency · retries</text>
+            </g>
+            <g fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M505 230 C 560 230 560 140 640 140" marker-end="url(#pa-arr)"/>
+              <path d="M505 260 H640" marker-end="url(#pa-arr)"/>
+              <path d="M505 290 C 560 290 560 380 640 380" style="stroke:var(--accent-text)" stroke-dasharray="5 4" marker-end="url(#pa-arr-acc)"/>
+            </g>
+            <text x="572" y="252" text-anchor="middle" class="mono" font-size="11" fill="currentColor" opacity=".7">GET</text>
+            <g class="mono" font-size="12">
+              <g transform="translate(650 112)">
+                <circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M16 29l8 8 16-17" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                <text x="70" y="22" fill="currentColor" font-weight="600">website</text>
+                <text x="70" y="40" fill="currentColor" opacity=".6">200 · 142 ms</text>
+              </g>
+              <g transform="translate(650 232)">
+                <circle cx="28" cy="28" r="26" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M16 29l8 8 16-17" fill="none" stroke="currentColor" stroke-width="2.5"/>
+                <text x="70" y="22" fill="currentColor" font-weight="600">api-health</text>
+                <text x="70" y="40" fill="currentColor" opacity=".6">200 · 318 ms</text>
+              </g>
+              <g transform="translate(650 352)">
+                <circle cx="28" cy="28" r="26" style="fill:var(--accent)"/>
+                <path d="M18 18l20 20M38 18l-20 20" stroke="#111" stroke-width="3"/>
+                <text x="70" y="22" fill="currentColor" font-weight="600">legacy-redirect</text>
+                <text x="70" y="40" style="fill:var(--accent-text)" data-i18n="d.got">got 200 · expected 301</text>
+              </g>
+            </g>
+            <g transform="translate(355 400)">
+              <line x1="75" y1="-80" x2="75" y2="-6" stroke="currentColor" stroke-width="1.5" marker-end="url(#pa-arr)"/>
+              <rect x="0" y="0" width="150" height="56" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <text x="75" y="24" text-anchor="middle" class="mono" font-size="12" font-weight="600" fill="currentColor">exit 1</text>
+              <text x="75" y="42" text-anchor="middle" class="mono" font-size="10" fill="currentColor" opacity=".6" data-i18n="d.healthy">2/3 healthy</text>
+            </g>
+            <g transform="translate(60 410)" class="mono" font-size="11" fill="currentColor">
+              <line x1="290" y1="18" x2="180" y2="18" stroke="currentColor" stroke-width="1.5" marker-end="url(#pa-arr)"/>
+              <text x="0" y="14" font-weight="600">cron / CI</text>
+              <text x="0" y="30" opacity=".6" data-i18n="d.fails">fails the job</text>
+            </g>
+            <g transform="translate(505 428)" class="mono" font-size="11">
+              <line x1="0" y1="0" x2="130" y2="0" style="stroke:var(--accent-text)" stroke-width="1.5" marker-end="url(#pa-arr-acc)"/>
+              <text x="65" y="-8" text-anchor="middle" style="fill:var(--accent-text)">POST JSON</text>
+              <rect x="140" y="-22" width="130" height="44" rx="22" fill="none" style="stroke:var(--accent-text)" stroke-width="1.5"/>
+              <text x="205" y="4" text-anchor="middle" fill="currentColor" font-weight="600">Slack / Discord</text>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <figcaption data-i18n="cap.diag">The config lists what to check; pulse probes each endpoint and reduces the round to one exit code, plus a JSON alert when something fails.</figcaption>
+    </figure>
+    <p data-i18n="p4">The important part is that exit code: 0 when every endpoint is healthy, 1 when at least one check failed. It's the language cron, CI systems and shell scripts already speak, so pulse plugs into them with no glue code. Configuration mistakes also exit with an error and a message, so it's safe to block a deploy on it.</p>
+    <p data-i18n="p5">When something fails and a webhook is configured, pulse also posts a JSON summary of the failures, which can go straight into a Slack or Discord channel.</p>
+    <p class="pull" data-i18n="pull">One exit code is a language every pipeline already speaks.</p>
+
+    <!-- Bonus: the same round drawn as a heartbeat. Spike height ∝ latency (142 ms, 318 ms). -->
+    <figure class="wide">
+      <div class="frame">
+        <svg viewBox="0 0 1040 460" role="img" data-i18n-attr="aria-label:sig.aria"
+             aria-label="The same round drawn as a heartbeat: each spike's height is the endpoint's response time, and the failing check flatlines">
+          <defs>
+            <pattern id="pc-dot" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="8" cy="8" r="1" fill="currentColor" fill-opacity=".18"/></pattern>
+            <linearGradient id="pc-fade" x1="0" x2="1"><stop offset="0" style="stop-color:var(--accent-text)" stop-opacity="0"/><stop offset=".15" style="stop-color:var(--accent-text)"/><stop offset=".72" style="stop-color:var(--accent-text)"/><stop offset=".78" style="stop-color:var(--warn)"/></linearGradient>
+          </defs>
+          <g style="color:var(--text)">
+            <rect width="1040" height="460" fill="url(#pc-dot)"/>
+            <line x1="40" y1="300" x2="1000" y2="300" stroke="currentColor" stroke-opacity=".25" stroke-dasharray="2 6"/>
+            <line x1="40" y1="140" x2="760" y2="140" stroke="currentColor" stroke-opacity=".12"/>
+            <g class="mono" font-size="10" fill="currentColor" opacity=".5"><text x="40" y="292">0 ms</text><text x="40" y="134">300 ms</text></g>
+            <path d="M40 300 H200 l14 22 l18 -98 l18 120 l14 -44 H420 l14 26 l18 -196 l18 214 l14 -44 H640 l20 0 l6 -8 l6 16 l6 -8 H1000"
+                  fill="none" stroke="url(#pc-fade)" stroke-width="3.5" stroke-linejoin="round"/>
+            <path d="M40 300 H200 l14 22 l18 -98 l18 120 l14 -44 H420 l14 26 l18 -196 l18 214 l14 -44 H640 l20 0 l6 -8 l6 16 l6 -8 H1000"
+                  fill="none" stroke="url(#pc-fade)" stroke-width="14" stroke-opacity=".12" stroke-linejoin="round"/>
+            <g class="mono" font-size="12" fill="currentColor">
+              <text x="232" y="196" text-anchor="middle" font-weight="600">website</text>
+              <text x="232" y="180" text-anchor="middle" opacity=".6">142 ms</text>
+              <text x="452" y="112" text-anchor="middle" font-weight="600">api-health</text>
+              <text x="452" y="96" text-anchor="middle" opacity=".6">318 ms</text>
+              <text x="668" y="270" text-anchor="middle" font-weight="600">legacy-redirect</text>
+              <text x="668" y="254" text-anchor="middle" style="fill:var(--warn)" data-i18n="s.exp">expected 301</text>
+            </g>
+            <circle cx="232" cy="370" r="6" style="fill:var(--accent-text)"/>
+            <circle cx="452" cy="370" r="6" style="fill:var(--accent-text)"/>
+            <circle cx="668" cy="370" r="6" fill="none" style="stroke:var(--warn)" stroke-width="2.5"/>
+            <g transform="translate(790 60)">
+              <text x="0" y="0" class="mono" font-size="11" fill="currentColor" opacity=".55" data-i18n="s.round">PULSE · ROUND 1</text>
+              <text x="0" y="76" font-size="84" font-weight="700" fill="currentColor" letter-spacing="-4" font-family="Space Grotesk, sans-serif">2/3</text>
+              <text x="0" y="106" class="mono" font-size="13" fill="currentColor" data-i18n="s.healthy">healthy</text>
+              <rect x="0" y="330" width="170" height="40" style="fill:var(--warn)"/>
+              <text x="16" y="356" class="mono" font-size="14" font-weight="600" fill="#111" data-i18n="s.exit">exit 1 · alert ↗</text>
+            </g>
+            <text x="40" y="430" class="mono" font-size="11" fill="currentColor" opacity=".55" data-i18n="s.legend">spike height = response time · flatline = failed rule</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption data-i18n="cap.sig">The same round as a heartbeat. Spike heights are drawn to scale from the response times above.</figcaption>
+    </figure>
+
+    <h2><span class="n">03</span><span data-i18n="h.where">Where it fits</span></h2>
+    <ul>
+      <li data-i18n="w1"><strong>A cron job</strong> on a small server or a Raspberry Pi, checking every minute and logging the result.</li>
+      <li data-i18n="w2"><strong>A smoke test after each deploy</strong> in a GitHub Actions workflow: if the new release doesn't answer correctly, the pipeline goes red.</li>
+      <li data-i18n="w3"><strong>Continuous monitoring</strong> with <code>--loop</code>, at an interval you choose.</li>
+      <li data-i18n="w4"><strong>Feeding other tools</strong> with <code>--json</code> instead of a table.</li>
+    </ul>
+
+    <h2><span class="n">04</span><span data-i18n="h.decisions">Decisions I made, and why</span></h2>
+    <ul>
+      <li data-i18n="li1"><strong>Standard library only.</strong> Nothing to <code>pip install</code>, so nothing breaks when a dependency changes, and it runs anywhere Python 3.11 does.</li>
+      <li data-i18n="li2"><strong>Retry only what is worth retrying.</strong> Timeouts, connection errors and 5xx or 429 responses are retried with exponential backoff, random jitter and a 30-second cap. A wrong status or a missing keyword fails immediately, because retrying won't fix it.</li>
+      <li data-i18n="li3"><strong>Private by design.</strong> The config file is ignored by git, so your list of endpoints stays on the machine that runs the checks.</li>
+      <li data-i18n="li4"><strong>Small enough to read.</strong> The whole tool is under 300 lines. You can audit it before trusting it with your alerts.</li>
+    </ul>
+
+    <h2><span class="n">05</span><span data-i18n="h.limits">Known limits</span></h2>
+    <p data-i18n="p6">pulse is a checker, not a monitoring platform. There is no history, no graphs and no dashboard: results live in your logs, exit codes and webhook messages. The project's roadmap lists stored history and a Prometheus metrics endpoint as next steps.</p>
+
+    <div class="cta-box">
+      <h3 data-i18n="cta.h">Try it or read the code</h3>
+      <p data-i18n="cta.p">Open source under the MIT licence. Needs Python 3.11 or newer:</p>
+      <pre>git clone https://github.com/Rodzman/pulse.git && cd pulse
+cp pulse.example.toml pulse.toml
+python3 pulse.py</pre>
+      <div class="btns">
+        <a class="btn primary" href="https://github.com/Rodzman/pulse" data-i18n="cta.gh">View on GitHub ↗</a>
+        <a class="btn ghost" href="../../#work" data-i18n="cta.back">More projects</a>
+      </div>
+    </div>
+
+    <div class="tags"><span class="tag">Python 3.11</span><span class="tag">stdlib only</span><span class="tag">TOML</span><span class="tag">unittest</span><span class="tag">GitHub Actions</span></div>
+  </main>
+
+  <footer>
+    <div class="wrap mono">
+      <span>© <span id="year">2026</span> Rodz · <a href="../../">rodzman.github.io</a></span>
+      <span data-i18n="footer">Hand-written HTML &amp; CSS. No framework, no tracking.</span>
+    </div>
+  </footer>
+
+  <script>
+    window.ARTICLE_META_PT = {
+      title: 'pulse: saiba quando quebra, sem mais um painel — Rodz',
+      desc: 'Um verificador de saúde em um único arquivo, sem dependências, que avisa cron jobs e pipelines de CI quando um site ou API para de se comportar.'
+    };
+    window.ARTICLE_PT = {
+      'skip': 'Pular para o artigo',
+      'nav.back': '← Todos os projetos',
+      'kicker': '<b>●</b> Estudo de caso · Ferramenta de operações',
+      'title': 'Saiba quando quebra, sem mais um painel<span class="dot">.</span>',
+      'dek': 'O pulse é um verificador de saúde em um único arquivo que avisa seu cron job ou pipeline de CI quando um site ou API para de se comportar, sem nada para instalar.',
+      'readtime': '3 min de leitura',
+      'cover.aria': 'O pulse verifica três endpoints; um falha no status esperado, então a rodada reporta 2 de 3 saudáveis, sai com 1 e envia um alerta',
+      'cover.l1': 'CONFIRA', 'cover.l2': 'CADA', 'cover.l3': 'ENDPOINT.',
+      'cover.result': 'RESULTADO', 'cover.exit': 'exit 1 → alerta enviado',
+      'p1': 'Todo serviço tem um punhado de endereços que simplesmente precisam continuar funcionando: a página inicial, uma rota de saúde da API, um redirecionamento do qual links antigos dependem. Existem serviços de monitoramento para isso, mas eles costumam significar mais uma conta, mais um painel, e entregar sua lista de endpoints para outra pessoa.',
+      'p2': 'O pulse faz o caminho oposto. É um único arquivo Python que usa só a biblioteca padrão. Você lista seus endpoints num pequeno arquivo de configuração, roda, e ele diz, por meio de um único código de saída, se está tudo saudável.',
+      'f1': 'arquivo para copiar', 'f2': 'dependências para instalar', 'f3': 'código de saída: saudável / falhou',
+      'h.what': 'O que uma verificação confere',
+      'p3': 'Uma verificação só passa quando todas as regras definidas para ela são cumpridas. Para cada endpoint você pode exigir:',
+      'li.a': '<strong>Um código de status.</strong> 200 por padrão, ou, por exemplo, 301 para um redirecionamento que precisa continuar permanente.',
+      'li.b': '<strong>Uma palavra-chave na resposta.</strong> Uma página pode responder 200 e mesmo assim estar quebrada; conferir uma palavra nela pega isso.',
+      'li.c': '<strong>Um limite de tempo de resposta.</strong> Lento também é um jeito de estar quebrado.',
+      'li.d': '<strong>Um timeout e novas tentativas.</strong> Para que uma oscilação rápida de rede não conte como queda.',
+      'cap.term': 'Exemplo de saída do README do projeto: o redirecionamento respondeu, mas com o status errado.',
+      'h.how': 'Como funciona uma rodada',
+      'diag.aria': 'O pulse lê o arquivo de configuração, consulta cada endpoint e transforma os resultados num código de saída para cron ou CI, mais um alerta por webhook quando algo falha',
+      'd.fig': 'FIG. 01 — UMA RODADA DE VERIFICAÇÕES', 'd.reads': 'lê', 'd.got': 'veio 200 · esperado 301',
+      'd.healthy': '2/3 saudáveis', 'd.fails': 'reprova o job',
+      'cap.diag': 'A configuração lista o que conferir; o pulse consulta cada endpoint e resume a rodada num código de saída, mais um alerta em JSON quando algo falha.',
+      'p4': 'A parte importante é esse código de saída: 0 quando todos os endpoints estão saudáveis, 1 quando pelo menos uma verificação falhou. É a língua que cron, sistemas de CI e scripts de shell já falam, então o pulse se encaixa neles sem nenhuma cola. Erros de configuração também saem com erro e uma mensagem, então é seguro bloquear um deploy com ele.',
+      'p5': 'Quando algo falha e há um webhook configurado, o pulse também envia um resumo das falhas em JSON, que pode ir direto para um canal do Slack ou do Discord.',
+      'pull': 'Um código de saída é uma língua que todo pipeline já fala.',
+      'sig.aria': 'A mesma rodada desenhada como batimentos: a altura de cada pico é o tempo de resposta do endpoint, e a verificação que falhou fica em linha reta',
+      's.exp': 'esperado 301', 's.round': 'PULSE · RODADA 1', 's.healthy': 'saudáveis', 's.exit': 'exit 1 · alerta ↗',
+      's.legend': 'altura do pico = tempo de resposta · linha reta = regra que falhou',
+      'cap.sig': 'A mesma rodada como batimentos cardíacos. As alturas dos picos estão em escala com os tempos de resposta acima.',
+      'h.where': 'Onde ele se encaixa',
+      'w1': '<strong>Um cron job</strong> num servidor pequeno ou num Raspberry Pi, conferindo a cada minuto e registrando o resultado.',
+      'w2': '<strong>Um teste de fumaça depois de cada deploy</strong> num workflow do GitHub Actions: se a nova versão não responder certo, o pipeline fica vermelho.',
+      'w3': '<strong>Monitoramento contínuo</strong> com <code>--loop</code>, no intervalo que você escolher.',
+      'w4': '<strong>Alimentar outras ferramentas</strong> com <code>--json</code> em vez de uma tabela.',
+      'h.decisions': 'Decisões que tomei, e por quê',
+      'li1': '<strong>Só a biblioteca padrão.</strong> Nada de <code>pip install</code>, então nada quebra quando uma dependência muda, e roda em qualquer lugar com Python 3.11.',
+      'li2': '<strong>Tentar de novo só o que vale a pena.</strong> Timeouts, erros de conexão e respostas 5xx ou 429 são repetidos com espera exponencial, variação aleatória e limite de 30 segundos. Um status errado ou uma palavra-chave ausente falham na hora, porque repetir não vai resolver.',
+      'li3': '<strong>Privado por design.</strong> O arquivo de configuração é ignorado pelo git, então sua lista de endpoints fica na máquina que roda as verificações.',
+      'li4': '<strong>Pequeno o bastante para ler.</strong> A ferramenta inteira tem menos de 300 linhas. Dá para auditar antes de confiar seus alertas a ela.',
+      'h.limits': 'Limites conhecidos',
+      'p6': 'O pulse é um verificador, não uma plataforma de monitoramento. Não há histórico, gráficos nem painel: os resultados ficam nos seus logs, códigos de saída e mensagens de webhook. O roadmap do projeto lista histórico armazenado e um endpoint de métricas para Prometheus como próximos passos.',
+      'cta.h': 'Experimente ou leia o código',
+      'cta.p': 'Código aberto sob a licença MIT. Precisa de Python 3.11 ou mais novo:',
+      'cta.gh': 'Ver no GitHub ↗', 'cta.back': 'Mais projetos',
+      'footer': 'HTML e CSS escritos à mão. Sem framework, sem rastreamento.'
+    };
+  </script>
+  <script src="../../assets/article.js"></script>
+</body>
+</html>
